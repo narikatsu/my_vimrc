@@ -3,7 +3,8 @@ set encoding=utf-8
 set fileencodings=utf-8,iso-2022-jp,euc-jp,sjis,cp932
 set guifont=Ricty_Diminished_Discord:h14
 set ambiwidth=double
-language C "-----------------------------------------------------"
+language C 
+"-----------------------------------------------------"
 
 "-----------COMMAND SPACE CONFIG----------------------"
 set showcmd
@@ -25,7 +26,8 @@ set imsearch=-1 "SearchMode Default IME : Same as InsertMode
 
 set browsedir=buffer
 
-set clipboard+=unnamed "Windows Cripboard
+" set clipboard+=unnamed "Windows Cripboard
+set clipboard=unnamedplus "Debian Cripboard
 
 set hidden "VIEW OTHER FILE without SAVING WORKING FILE
 
@@ -104,6 +106,28 @@ Plug 'nathanaelkane/vim-indent-guides'
 Plug 'itchyny/lightline.vim'
 Plug 'thinca/vim-quickrun'
 
+" Setting for JP chars by SKK
+Plug 'vim-denops/denops.vim'
+Plug 'vim-skk/denops-skkeleton.vim'
+imap <C-j> <Plug>(skkeleton-toggle)
+cmap <C-j> <Plug>(skkeleton-toggle)
+
+function! s:skkeleton_init() abort
+  call skkeleton#config({
+    \ 'eggLikeNewline': v:true
+    \ })
+  call skkeleton#register_kanatable('rom', {
+    \ "z\<Space>": ["\u3000", ''],
+    \ })
+endfunction
+autocmd User skkeleton-initialize-pre call s:skkeleton_init()
+
+" Ghost Text
+" (Only enabled for Vim 8 (not for Neovim).)
+Plug 'roxma/nvim-yarp', v:version >= 800 && !has('nvim') ? {} : { 'on': [], 'for': [] }
+Plug 'roxma/vim-hug-neovim-rpc', v:version >= 800 && !has('nvim') ? {} : { 'on': [], 'for': [] }
+Plug 'raghur/vim-ghost', {'do': ':GhostInstall'}
+
 "Vue.js tool
 Plug 'posva/vim-vue', {'for': ['vue']}
 
@@ -120,59 +144,119 @@ nmap <Leader>f <Plug>(easymotion-overwin-f2)
 " Color Schema
 Plug 'nanotech/jellybeans.vim'
 
+" Auto complete (ddc.vim)
+" requires denops.vim, pum.vim
+Plug 'Shougo/ddc.vim'
+Plug 'Shougo/pum.vim'
+Plug 'Shougo/ddc-around'
+Plug 'LumaKernel/ddc-file'
+Plug 'Shougo/ddc-matcher_head'
+Plug 'Shougo/ddc-sorter_rank'
+Plug 'Shougo/ddc-converter_remove_overlap'
+Plug 'Shun/ddc-vim-lsp'
+
+
+
 " Setting for Vim-LSP(Language Protocol Server)
-Plug 'prabirshrestha/async.vim'
+" Plug 'prabirshrestha/async.vim'
 Plug 'prabirshrestha/vim-lsp'
-Plug 'prabirshrestha/asyncomplete.vim'
-Plug 'prabirshrestha/asyncomplete-lsp.vim'
+Plug 'mattn/vim-lsp-settings'
+Plug 'mattn/vim-lsp-icons'
+Plug 'hrsh7th/vim-vsnip'
+Plug 'hrsh7th/vim-vsnip-integ'
+" Plug 'prabirshrestha/asyncomplete.vim'
+" Plug 'prabirshrestha/asyncomplete-lsp.vim'
 Plug 'PProvost/vim-ps1'
 
-augroup LspGo
-  au!
-  autocmd User lsp_setup call lsp#register_server({
-      \ 'name': 'go-lang',
-      \ 'cmd': {server_info->['gopls']},
-      \ 'whitelist': ['go'],
-      \ })
-  autocmd FileType go setlocal omnifunc=lsp#complete
-  autocmd FileType go nmap <buffer> gd <plug>(lsp-definition)
-  autocmd FileType go nmap <buffer> ,n <plug>(lsp-next-error)
-  autocmd FileType go nmap <buffer> ,p <plug>(lsp-previous-error)
-augroup END
-
-if executable('rls')
-    au User lsp_setup call lsp#register_server({
-        \ 'name': 'rls',
-        \ 'cmd': {server_info->['rustup', 'run', 'stable', 'rls']},
-        \ 'workspace_config': {'rust': {'clippy_preference': 'on'}},
-        \ 'whitelist': ['rust'],
-        \ })
-    autocmd FileType rust setlocal omnifunc=lsp#complete
-    autocmd FileType rust nmap <buffer> gd <plug>(lsp-definition)
-    autocmd FileType rust nmap <buffer> ,n <plug>(lsp-next-error)
-    autocmd FileType rust nmap <buffer> ,p <plug>(lsp-previous-error)
-endif
-
-if executable('vls')
-    au User lsp_setup call lsp#register_server({
-        \ 'name': 'vls',
-        \ 'cmd': {server_info->['vls']},
-        \ 'whitelist': ['vue'],
-        \ 'initialization_options': {
-        \      'config': {
-        \         'html': {},
-        \         'vetur': {
-        \           'validation': {}
-        \         },
-        \      }
-        \ }
-    \ })
-    autocmd FileType vue setlocal omnifunc=lsp#complete
-    autocmd FileType vue nmap <buffer> gd <plug>(lsp-definition)
-    autocmd FileType vue nmap <buffer> ,n <plug>(lsp-next-error)
-    autocmd FileType vue nmap <buffer> ,p <plug>(lsp-previous-error)
-endif
+" augroup LspGo
+"   au!
+"   autocmd User lsp_setup call lsp#register_server({
+"       \ 'name': 'go-lang',
+"       \ 'cmd': {server_info->['gopls']},
+"       \ 'whitelist': ['go'],
+"       \ })
+"   autocmd FileType go setlocal omnifunc=lsp#complete
+"   autocmd FileType go nmap <buffer> gd <plug>(lsp-definition)
+"   autocmd FileType go nmap <buffer> ,n <plug>(lsp-next-error)
+"   autocmd FileType go nmap <buffer> ,p <plug>(lsp-previous-error)
+" augroup END
+" 
+" if executable('rls')
+"     au User lsp_setup call lsp#register_server({
+"         \ 'name': 'rls',
+"         \ 'cmd': {server_info->['rustup', 'run', 'stable', 'rls']},
+"         \ 'workspace_config': {'rust': {'clippy_preference': 'on'}},
+"         \ 'whitelist': ['rust'],
+"         \ })
+"     autocmd FileType rust setlocal omnifunc=lsp#complete
+"     autocmd FileType rust nmap <buffer> gd <plug>(lsp-definition)
+"     autocmd FileType rust nmap <buffer> ,n <plug>(lsp-next-error)
+"     autocmd FileType rust nmap <buffer> ,p <plug>(lsp-previous-error)
+" endif
+" 
+" if executable('vls')
+"     au User lsp_setup call lsp#register_server({
+"         \ 'name': 'vls',
+"         \ 'cmd': {server_info->['vls']},
+"         \ 'whitelist': ['vue'],
+"         \ 'initialization_options': {
+"         \      'config': {
+"         \         'html': {},
+"         \         'vetur': {
+"         \           'validation': {}
+"         \         },
+"         \      }
+"         \ }
+"     \ })
+"     autocmd FileType vue setlocal omnifunc=lsp#complete
+"     autocmd FileType vue nmap <buffer> gd <plug>(lsp-definition)
+"     autocmd FileType vue nmap <buffer> ,n <plug>(lsp-next-error)
+"     autocmd FileType vue nmap <buffer> ,p <plug>(lsp-previous-error)
+" endif
 
 call plug#end()
 
+" Settings for LSP
+let g:lsp_diagnostics_enabled = 1
+let g:lsp_diagnostics_echo_cursor = 1
+let g:asyncomplete_auto_popup = 1
+let g:asyncomplete_auto_completeopt = 0
+let g:asyncomplete_popup_delay = 200
+let g:lsp_text_edit_enabled = 1
+
+" Setting for ddc.vim (auto complete)
+call ddc#custom#patch_global('completionMenu', 'pum.vim')
+call ddc#custom#patch_global('sources', [
+ \ 'around',
+ \ 'vim-lsp',
+ \ 'skkeleton',
+ \ 'file'
+ \ ])
+call ddc#custom#patch_global('sourceOptions', {
+ \ '_': {
+ \   'matchers': ['matcher_head'],
+ \   'sorters': ['sorter_rank'],
+ \   'converters': ['converter_remove_overlap'],
+ \ },
+ \ 'around': {'mark': 'around'},
+ \ 'vim-lsp': {
+ \   'mark': 'lsp', 
+ \   'matchers': ['matcher_head'],
+ \   'forceCompletionPattern': '\.|:|->|"\w+/*',
+ \ },
+ \ 'skkeleton': {
+ \   'mark': 'skkeleton',
+ \   'matchers': ['skkeleton'],
+ \   'sorters': [],
+ \ },
+ \ 'file': {
+ \   'mark': 'file',
+ \   'isVolatile': v:true, 
+ \   'forceCompletionPattern': '\S/\S*',
+ \ }})
+call ddc#enable()
+inoremap <Tab> <Cmd>call pum#map#insert_relative(+1)<CR>
+inoremap <S-Tab> <Cmd>call pum#map#insert_relative(-1)<CR>
+
 colorscheme jellybeans
+
