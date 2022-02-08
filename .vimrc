@@ -101,6 +101,8 @@ Plug 'Townk/vim-autoclose'
 Plug 'Shougo/vimfiler'
 " Unite
 Plug 'Shougo/unite.vim'
+" Markdown preview
+Plug 'previm/previm.vim'
 
 Plug 'nathanaelkane/vim-indent-guides'
 Plug 'itchyny/lightline.vim'
@@ -155,17 +157,13 @@ Plug 'Shougo/ddc-sorter_rank'
 Plug 'Shougo/ddc-converter_remove_overlap'
 Plug 'Shun/ddc-vim-lsp'
 
-
-
 " Setting for Vim-LSP(Language Protocol Server)
-" Plug 'prabirshrestha/async.vim'
 Plug 'prabirshrestha/vim-lsp'
 Plug 'mattn/vim-lsp-settings'
 Plug 'mattn/vim-lsp-icons'
 Plug 'hrsh7th/vim-vsnip'
 Plug 'hrsh7th/vim-vsnip-integ'
-" Plug 'prabirshrestha/asyncomplete.vim'
-" Plug 'prabirshrestha/asyncomplete-lsp.vim'
+
 Plug 'PProvost/vim-ps1'
 
 " augroup LspGo
