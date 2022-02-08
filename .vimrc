@@ -102,7 +102,8 @@ Plug 'Shougo/vimfiler'
 " Unite
 Plug 'Shougo/unite.vim'
 " Markdown preview
-Plug 'previm/previm.vim'
+Plug 'previm/previm'
+let g:previm_open_cmd = 'firefox-stable'
 
 Plug 'nathanaelkane/vim-indent-guides'
 Plug 'itchyny/lightline.vim'
