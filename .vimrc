@@ -61,13 +61,12 @@ set number "VIEW ROW NUMBER
 
 set whichwrap=b,s,h,l,<,>,[,]
 
+"Set <Space> as <Leader>
+let mapleader = "\<Space>"
+
 nnoremap <silent> j gj
 nnoremap <silent> k gk
 
-"Set <Space> as <Leader>
-let mapleader = "\<Space>"
-nnoremap <Leader>ub :Unite buffer<CR>
-nnoremap <Leader>uf :Unite file_rec<CR>
 " nnoremap <Leader>t :terminal ++close powershell<CR>
 nnoremap <Leader>t :bo terminal ++close ++rows=10 <CR>
 
@@ -97,10 +96,6 @@ Plug 'mattn/emmet-vim'
 Plug 'tpope/vim-surround'
 Plug 'Townk/vim-autoclose'
 
-" Filer Plugin
-Plug 'Shougo/vimfiler'
-" Unite
-Plug 'Shougo/unite.vim'
 " Markdown preview
 Plug 'previm/previm'
 let g:previm_open_cmd = 'firefox-stable'
@@ -158,6 +153,20 @@ Plug 'Shougo/ddc-sorter_rank'
 Plug 'Shougo/ddc-converter_remove_overlap'
 Plug 'Shun/ddc-vim-lsp'
 
+" Setting for UI framework
+Plug 'Shougo/vimfiler'
+Plug 'Shougo/unite.vim'
+Plug 'Shougo/ddu.vim' "Instead of Unite
+"component of ddu
+Plug 'Shougo/ddu-ui-ff'
+Plug 'Shougo/ddu-kind-file'
+Plug 'Shougo/ddu-filter-matcher_substring'
+Plug 'shun/ddu-source-buffer'
+Plug 'shun/ddu-source-rg'
+Plug 'Shougo/ddu-source-action'
+Plug 'Shougo/ddu-source-file_rec'
+
+
 " Setting for Vim-LSP(Language Protocol Server)
 Plug 'prabirshrestha/vim-lsp'
 Plug 'mattn/vim-lsp-settings'
@@ -167,51 +176,6 @@ Plug 'hrsh7th/vim-vsnip-integ'
 
 Plug 'PProvost/vim-ps1'
 
-" augroup LspGo
-"   au!
-"   autocmd User lsp_setup call lsp#register_server({
-"       \ 'name': 'go-lang',
-"       \ 'cmd': {server_info->['gopls']},
-"       \ 'whitelist': ['go'],
-"       \ })
-"   autocmd FileType go setlocal omnifunc=lsp#complete
-"   autocmd FileType go nmap <buffer> gd <plug>(lsp-definition)
-"   autocmd FileType go nmap <buffer> ,n <plug>(lsp-next-error)
-"   autocmd FileType go nmap <buffer> ,p <plug>(lsp-previous-error)
-" augroup END
-" 
-" if executable('rls')
-"     au User lsp_setup call lsp#register_server({
-"         \ 'name': 'rls',
-"         \ 'cmd': {server_info->['rustup', 'run', 'stable', 'rls']},
-"         \ 'workspace_config': {'rust': {'clippy_preference': 'on'}},
-"         \ 'whitelist': ['rust'],
-"         \ })
-"     autocmd FileType rust setlocal omnifunc=lsp#complete
-"     autocmd FileType rust nmap <buffer> gd <plug>(lsp-definition)
-"     autocmd FileType rust nmap <buffer> ,n <plug>(lsp-next-error)
-"     autocmd FileType rust nmap <buffer> ,p <plug>(lsp-previous-error)
-" endif
-" 
-" if executable('vls')
-"     au User lsp_setup call lsp#register_server({
-"         \ 'name': 'vls',
-"         \ 'cmd': {server_info->['vls']},
-"         \ 'whitelist': ['vue'],
-"         \ 'initialization_options': {
-"         \      'config': {
-"         \         'html': {},
-"         \         'vetur': {
-"         \           'validation': {}
-"         \         },
-"         \      }
-"         \ }
-"     \ })
-"     autocmd FileType vue setlocal omnifunc=lsp#complete
-"     autocmd FileType vue nmap <buffer> gd <plug>(lsp-definition)
-"     autocmd FileType vue nmap <buffer> ,n <plug>(lsp-next-error)
-"     autocmd FileType vue nmap <buffer> ,p <plug>(lsp-previous-error)
-" endif
 
 call plug#end()
 
@@ -243,19 +207,104 @@ call ddc#custom#patch_global('sourceOptions', {
  \   'matchers': ['matcher_head'],
  \   'forceCompletionPattern': '\.|:|->|"\w+/*',
  \ },
- \ 'skkeleton': {
- \   'mark': 'skkeleton',
- \   'matchers': ['skkeleton'],
- \   'sorters': [],
- \ },
  \ 'file': {
  \   'mark': 'file',
  \   'isVolatile': v:true, 
  \   'forceCompletionPattern': '\S/\S*',
  \ }})
+" turn off skkeleton comple
+" 'skkeleton': {
+"   'mark': 'skkeleton',
+"   'matchers': ['skkeleton'],
+"   'sorters': [],
+" },
 call ddc#enable()
 inoremap <Tab> <Cmd>call pum#map#insert_relative(+1)<CR>
 inoremap <S-Tab> <Cmd>call pum#map#insert_relative(-1)<CR>
+
+" You must set the default ui.
+" Note: ff ui
+" https://github.com/Shougo/ddu-ui-ff
+call ddu#custom#patch_global({
+    \ 'ui': 'ff',
+    \ })
+" You must set the default action.
+" Note: file kind
+" https://github.com/Shougo/ddu-kind-file
+call ddu#custom#patch_global({
+    \   'kindOptions': {
+    \     'file': {
+    \       'defaultAction': 'open',
+    \     },
+    \   }
+    \ })
+call ddu#custom#patch_global({
+    \   'kindOptions': {
+    \     'action': {
+    \       'defaultAction': 'do',
+    \     },
+    \   }
+    \ })
+" Specify matcher.
+" Note: matcher_substring filter
+" https://github.com/Shougo/ddu-filter-matcher_substring
+call ddu#custom#patch_global({
+    \   'sourceOptions': {
+    \     '_': {
+    \       'matchers': ['matcher_substring'],
+    \     },
+    \   }
+    \ })
+" Set default sources
+" Note: file source
+" https://github.com/Shougo/ddu-buffer-file
+call ddu#custom#patch_global({
+    \ 'sources': [{'name': 'buffer', 'params': {}}],
+    \ })
+
+" source param setting for ripgrep source
+call ddu#custom#patch_global({
+    \   'sourceParams' : {
+    \     'rg' : {
+    \       'args': ['--column', '--no-heading', '--color', 'never'],
+    \     },
+    \   },
+    \ })
+
+" Specify source with params
+" Note: file_rec source
+" https://github.com/Shougo/ddu-source-file_rec
+
+nnoremap <silent> <Leader>ub :call ddu#start({'name': 'buffer'})<CR>
+nnoremap <silent> <Leader>uf :call ddu#start({'sources': [{'name': 'file_rec'}]})<CR>
+nnoremap <silent> <Leader>ug :call ddu_rg#find()<CR>
+
+autocmd FileType ddu-ff call s:ddu_my_settings()
+function! s:ddu_my_settings() abort
+  nnoremap <buffer><silent> <CR>
+  \ <Cmd>call ddu#ui#ff#do_action('itemAction')<CR>
+  nnoremap <buffer><silent> <Space>
+  \ <Cmd>call ddu#ui#ff#do_action('toggleSelectItem')<CR>
+  nnoremap <buffer><silent> d
+  \ <Cmd>call ddu#ui#ff#do_action('chooseAction')<CR>
+  nnoremap <buffer><silent> i
+  \ <Cmd>call ddu#ui#ff#do_action('openFilterWindow')<CR>
+  nnoremap <buffer><silent> p
+  \ <Cmd>call ddu#ui#ff#do_action('preview')<CR>
+  nnoremap <buffer><silent> r
+  \ <Cmd>call ddu#ui#ff#do_action('refreshItems')<CR>
+  nnoremap <buffer><silent> q
+  \ <Cmd>call ddu#ui#ff#do_action('quit')<CR>
+  nnoremap <buffer><silent> h
+  \ <Cmd>echo('enter:open, q:quit, i:filter, d:action, p:preview r:refresh')<CR>
+endfunction
+autocmd FileType ddu-ff-filter call s:ddu_filter_my_settings()
+function! s:ddu_filter_my_settings() abort
+  inoremap <buffer><silent> <CR>
+  \ <Esc><Cmd>close<CR>
+  nnoremap <buffer><silent> <CR>
+  \ <Cmd>close<CR>
+endfunction
 
 colorscheme jellybeans
 
