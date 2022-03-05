@@ -1,9 +1,13 @@
 #/bin/bash
 
-# install nessesary packages
+# install nessesary packages to build vim
 sudo apt install git gettext libtinfo-dev libacl1-dev libgpm-dev build-essential cproto
 sudo apt install libperl-dev liblua5.2-0 lua5.2 liblua5.2-dev luajit python3-dev ruby-dev
 sudo apt install libx11-dev libxtst-dev libxt-dev libsm-dev libxpm-dev
+
+# install tools for vim plugins
+curl -fsSL https://deno.land/install.sh | sh
+sudo apt install ripgrep
 
 mkdir ~/vimbackup
 mkdir ~/src
