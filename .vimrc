@@ -26,8 +26,11 @@ set imsearch=-1 "SearchMode Default IME : Same as InsertMode
 
 set browsedir=buffer
 
-" set clipboard+=unnamed "Windows Cripboard
-set clipboard=unnamedplus "Debian Cripboard
+if has('win32')
+  set clipboard+=unnamed "Windows Cripboard
+else
+  set clipboard=unnamedplus "Debian Cripboard
+endif"
 
 set hidden "VIEW OTHER FILE without SAVING WORKING FILE
 
@@ -39,7 +42,6 @@ nnoremap <S-Down> <C-w>+<CR>
 "-----------------------------------------------------"
 
 "----------EDITOR CONFIG------------------------------"
-
 
 set autoindent
 set smartindent
@@ -67,8 +69,11 @@ let mapleader = "\<Space>"
 nnoremap <silent> j gj
 nnoremap <silent> k gk
 
-" nnoremap <Leader>t :terminal ++close powershell<CR>
-nnoremap <Leader>t :bo terminal ++close ++rows=10 <CR>
+if has('win32')
+  nnoremap <Leader>t :bo terminal ++close ++rows=10 powershell<CR>
+else
+  nnoremap <Leader>t :bo terminal ++close ++rows=10 <CR>
+endif
 
 "yang to rowend by Y
 nnoremap Y y$
@@ -112,11 +117,13 @@ cmap <C-j> <Plug>(skkeleton-toggle)
 
 function! s:skkeleton_init() abort
   call skkeleton#config({
+    \ 'userJisyo':"~/.skkeleton",
     \ 'eggLikeNewline': v:true
     \ })
   call skkeleton#register_kanatable('rom', {
     \ "z\<Space>": ["\u3000", ''],
     \ })
+" 'globalJisyo':"~/Appdata/Roaming/SKKFEP/DICTS/SKK-JISYO.L",
 endfunction
 autocmd User skkeleton-initialize-pre call s:skkeleton_init()
 
@@ -141,6 +148,9 @@ nmap <Leader>f <Plug>(easymotion-overwin-f2)
 
 " Color Schema
 Plug 'nanotech/jellybeans.vim'
+
+" file drawer
+Plug 'lambdalisue/fern.vim'
 
 " Auto complete (ddc.vim)
 " requires denops.vim, pum.vim
@@ -219,8 +229,8 @@ call ddc#custom#patch_global('sourceOptions', {
 "   'sorters': [],
 " },
 call ddc#enable()
-inoremap <Tab> <Cmd>call pum#map#insert_relative(+1)<CR>
-inoremap <S-Tab> <Cmd>call pum#map#insert_relative(-1)<CR>
+imap <C-n> <Cmd>call pum#map#insert_relative(+1)<CR>
+imap <C-p> <Cmd>call pum#map#insert_relative(-1)<CR>
 
 " You must set the default ui.
 " Note: ff ui
@@ -307,4 +317,3 @@ function! s:ddu_filter_my_settings() abort
 endfunction
 
 colorscheme jellybeans
-
