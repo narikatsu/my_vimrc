@@ -162,6 +162,7 @@ Plug 'Shougo/ddc-matcher_head'
 Plug 'Shougo/ddc-sorter_rank'
 Plug 'Shougo/ddc-converter_remove_overlap'
 Plug 'Shun/ddc-vim-lsp'
+Plug 'Shougo/ddc-ui-native'
 
 " Setting for UI framework
 Plug 'Shougo/vimfiler'
@@ -198,6 +199,8 @@ let g:asyncomplete_popup_delay = 200
 let g:lsp_text_edit_enabled = 1
 
 " Setting for ddc.vim (auto complete)
+" https://github.com/Shougo/ddc-ui-native
+call ddc#custom#patch_global('ui', 'native')
 call ddc#custom#patch_global('completionMenu', 'pum.vim')
 call ddc#custom#patch_global('sources', [
  \ 'around',
@@ -221,13 +224,12 @@ call ddc#custom#patch_global('sourceOptions', {
  \   'mark': 'file',
  \   'isVolatile': v:true, 
  \   'forceCompletionPattern': '\S/\S*',
+ \ 'skkeleton': {
+ \   'mark': 'skkeleton',
+ \   'matchers': ['skkeleton'],
+ \   'sorters': [],
+ \ },
  \ }})
-" turn off skkeleton comple
-" 'skkeleton': {
-"   'mark': 'skkeleton',
-"   'matchers': ['skkeleton'],
-"   'sorters': [],
-" },
 call ddc#enable()
 imap <C-n> <Cmd>call pum#map#insert_relative(+1)<CR>
 imap <C-p> <Cmd>call pum#map#insert_relative(-1)<CR>
