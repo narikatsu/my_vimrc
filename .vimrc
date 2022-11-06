@@ -170,12 +170,17 @@ Plug 'Shougo/unite.vim'
 Plug 'Shougo/ddu.vim' "Instead of Unite
 "component of ddu
 Plug 'Shougo/ddu-ui-ff'
+Plug 'Shougo/ddu-ui-filer'
+Plug 'Shougo/ddu-column-filename'
 Plug 'Shougo/ddu-kind-file'
+Plug 'Shougo/ddu-kind-word'
 Plug 'Shougo/ddu-filter-matcher_substring'
 Plug 'shun/ddu-source-buffer'
 Plug 'shun/ddu-source-rg'
 Plug 'Shougo/ddu-source-action'
 Plug 'Shougo/ddu-source-file_rec'
+Plug 'Shougo/ddu-source-file'
+Plug 'Shougo/ddu-source-register'
 
 
 " Setting for Vim-LSP(Language Protocol Server)
@@ -239,6 +244,13 @@ imap <C-p> <Cmd>call pum#map#insert_relative(-1)<CR>
 " https://github.com/Shougo/ddu-ui-ff
 call ddu#custom#patch_global({
     \ 'ui': 'ff',
+    \ 'uiParams': {
+    \   'ff': {
+    \     'prompt': '> ',
+    \   },
+    \   'filer': {
+    \   }
+    \ },
     \ })
 " You must set the default action.
 " Note: file kind
@@ -248,10 +260,9 @@ call ddu#custom#patch_global({
     \     'file': {
     \       'defaultAction': 'open',
     \     },
-    \   }
-    \ })
-call ddu#custom#patch_global({
-    \   'kindOptions': {
+    \     'word': {
+    \       'defaultAction': 'append',
+    \     },
     \     'action': {
     \       'defaultAction': 'do',
     \     },
@@ -264,6 +275,7 @@ call ddu#custom#patch_global({
     \   'sourceOptions': {
     \     '_': {
     \       'matchers': ['matcher_substring'],
+    \       'ignoreCase': v:true
     \     },
     \   }
     \ })
@@ -271,8 +283,23 @@ call ddu#custom#patch_global({
 " Note: file source
 " https://github.com/Shougo/ddu-buffer-file
 call ddu#custom#patch_global({
-    \ 'sources': [{'name': 'buffer', 'params': {}}],
+    \ 'sources': [
+    \   {'name': 'file', 'params': {}},
+    \ ],
     \ })
+
+" Specify source with params
+" Note: file_rec source
+" https://github.com/Shougo/ddu-source-file_rec
+call ddu#custom#patch_local('file_rec', {
+    \   'sources': [{
+    \   'name':'file_rec',
+    \   'params': {
+    \     'ignoredDirectories': ['.git', 'node_modules', ]
+    \   },
+    \   }],
+    \})
+
 
 " source param setting for ripgrep source
 call ddu#custom#patch_global({
@@ -283,13 +310,35 @@ call ddu#custom#patch_global({
     \   },
     \ })
 
-" Specify source with params
-" Note: file_rec source
-" https://github.com/Shougo/ddu-source-file_rec
 
-nnoremap <silent> <Leader>ub :call ddu#start({'name': 'buffer'})<CR>
-nnoremap <silent> <Leader>uf :call ddu#start({'sources': [{'name': 'file_rec'}]})<CR>
+nnoremap <silent> <Leader>ub :call ddu#start({'sources': [{'name': 'buffer'}]})<CR>
+nnoremap <silent> <Leader>ur :call ddu#start({'sources': [{'name': 'register'}]})<CR>
+nnoremap <silent> <Leader>ue :call ddu#start({'name': 'filer'})<CR>
+nnoremap <silent> <Leader>uf :call ddu#start({'name': 'file_rec'})<CR>
 nnoremap <silent> <Leader>ug :call ddu_rg#find()<CR>
+
+call ddu#custom#patch_local('filer', {
+\  'ui': 'filer',
+\  'sources': [
+\    {'name': 'file', 'params': {}},
+\  ],
+\  'sourceOptions': {
+\    '_': {
+\      'columns': ['filename'],
+\    },
+\  },
+\  'columns': ['filename'],
+\  'kindOptions': {
+\    'file': {
+\      'defaultAction': 'open',
+\    },
+\  },
+\  'actionOptions': {
+\    'narrow': {
+\      'quit': v:true,
+\    },
+\  },
+\ })
 
 autocmd FileType ddu-ff call s:ddu_my_settings()
 function! s:ddu_my_settings() abort
@@ -310,12 +359,28 @@ function! s:ddu_my_settings() abort
   nnoremap <buffer><silent> h
   \ <Cmd>echo('enter:open, q:quit, i:filter, d:action, p:preview r:refresh')<CR>
 endfunction
+
 autocmd FileType ddu-ff-filter call s:ddu_filter_my_settings()
 function! s:ddu_filter_my_settings() abort
   inoremap <buffer><silent> <CR>
   \ <Esc><Cmd>close<CR>
   nnoremap <buffer><silent> <CR>
   \ <Cmd>close<CR>
+  nnoremap <buffer><silent> q
+  \ <Cmd>close<CR>
+endfunction
+
+autocmd FileType ddu-filer call s:ddu_my_filer_settings()
+function! s:ddu_my_filer_settings() abort
+  nnoremap <buffer><silent> <CR>
+        \ <Cmd>call ddu#ui#filer#do_action('itemAction')<CR>
+  nnoremap <buffer><silent> <Space>
+        \ <Cmd>call ddu#ui#filer#do_action('toggleSelectItem')<CR>
+  nnoremap <buffer> o
+        \ <Cmd>call ddu#ui#filer#do_action('expandItem',
+        \ {'mode': 'toggle'})<CR>
+  nnoremap <buffer><silent> q
+        \ <Cmd>call ddu#ui#filer#do_action('quit')<CR>
 endfunction
 
 colorscheme jellybeans
