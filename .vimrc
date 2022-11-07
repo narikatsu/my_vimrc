@@ -109,6 +109,9 @@ Plug 'nathanaelkane/vim-indent-guides'
 Plug 'itchyny/lightline.vim'
 Plug 'thinca/vim-quickrun'
 
+" Git plugin
+Plug 'tpope/vim-fugitive'
+
 " Setting for JP chars by SKK
 Plug 'vim-denops/denops.vim'
 Plug 'vim-skk/denops-skkeleton.vim'
