@@ -29,7 +29,7 @@ set browsedir=buffer
 if has('win32')
   set clipboard+=unnamed "Windows Cripboard
 else
-  set clipboard=unnamedplus "Debian Cripboard
+  set clipboard+=unnamedplus "Debian Cripboard
 endif"
 
 set hidden "VIEW OTHER FILE without SAVING WORKING FILE
@@ -70,9 +70,21 @@ nnoremap <silent> j gj
 nnoremap <silent> k gk
 
 if has('win32')
-  nnoremap <Leader>t :bo terminal ++close ++rows=10 powershell<CR>
+  if has('nvim')
+    autocmd TermOpen * startinsert
+    tnoremap <silent> <ESC> <C-\><C-n>
+    nnoremap <Leader>t :terminal<CR>
+  else
+    nnoremap <Leader>t :bo terminal ++close ++rows=10 powershell<CR>
+  endif
 else
-  nnoremap <Leader>t :bo terminal ++close ++rows=10 <CR>
+  if has('nvim')
+    autocmd TermOpen * startinsert
+    tnoremap <silent> <ESC> <C-\><C-n>
+    nnoremap <Leader>t :terminal<CR>
+  else
+    nnoremap <Leader>t :bo terminal ++close ++rows=10 <CR>
+  endif
 endif
 
 "yang to rowend by Y
@@ -92,6 +104,14 @@ nnoremap # #zz
 nnoremap g* g*zz
 nnoremap g# g#zz
 
+if has("unix")
+  " sync vim register to clipboard
+  command Register2Clipboard :echo system('wl-copy', @")
+  " sync vim register to clipboard
+  command Clipboard2Register :let @" =  system('wl-paste')
+endif
+
+"
 set hlsearch "High Light
 call plug#begin('~/.vim/plugged')
 
@@ -103,7 +123,7 @@ Plug 'Townk/vim-autoclose'
 
 " Markdown preview
 Plug 'previm/previm'
-let g:previm_open_cmd = 'firefox-stable'
+let g:previm_open_cmd = 'firefox'
 
 Plug 'nathanaelkane/vim-indent-guides'
 Plug 'itchyny/lightline.vim'
@@ -120,21 +140,28 @@ cmap <C-j> <Plug>(skkeleton-toggle)
 
 function! s:skkeleton_init() abort
   call skkeleton#config({
-    \ 'userJisyo':"~/.skkeleton",
-    \ 'eggLikeNewline': v:true
+    \ 'userJisyo':"~/.skkeleton/user-jisyo",
+    \ 'globalJisyo':"~/.skkeleton/SKK-JISYO.L",
     \ })
+  "カナテーブル
+  "記号
   call skkeleton#register_kanatable('rom', {
     \ "z\<Space>": ["\u3000", ''],
+    \ "zh": ["←", ''],
+    \ "zj": ["↓", ''],
+    \ "zk": ["↑", ''],
+    \ "zl": ["→", ''],
+    \ "z.": ["…", ''],
+    \ "z~": ["〜", ''],
+    \ "z/": ["・", ''],
+    \ "z[": ["『", ''],
+    \ "z]": ["』", ''],
+    \ "z(": ["【", ''],
+    \ "z)": ["】", ''],
+    \ "z*": ["※", ''],
     \ })
-" 'globalJisyo':"~/Appdata/Roaming/SKKFEP/DICTS/SKK-JISYO.L",
 endfunction
 autocmd User skkeleton-initialize-pre call s:skkeleton_init()
-
-" Ghost Text
-" (Only enabled for Vim 8 (not for Neovim).)
-Plug 'roxma/nvim-yarp', v:version >= 800 && !has('nvim') ? {} : { 'on': [], 'for': [] }
-Plug 'roxma/vim-hug-neovim-rpc', v:version >= 800 && !has('nvim') ? {} : { 'on': [], 'for': [] }
-Plug 'raghur/vim-ghost', {'do': ':GhostInstall'}
 
 "Vue.js tool
 Plug 'posva/vim-vue', {'for': ['vue']}
@@ -166,6 +193,7 @@ Plug 'Shougo/ddc-sorter_rank'
 Plug 'Shougo/ddc-converter_remove_overlap'
 Plug 'Shun/ddc-vim-lsp'
 Plug 'Shougo/ddc-ui-native'
+Plug 'Shougo/ddc-ui-pum'
 
 " Setting for UI framework
 Plug 'Shougo/vimfiler'
@@ -208,8 +236,16 @@ let g:lsp_text_edit_enabled = 1
 
 " Setting for ddc.vim (auto complete)
 " https://github.com/Shougo/ddc-ui-native
-call ddc#custom#patch_global('ui', 'native')
-call ddc#custom#patch_global('completionMenu', 'pum.vim')
+" call ddc#custom#patch_global('completionMenu', 'pum.vim')
+call ddc#custom#patch_global('ui', 'pum')
+call ddc#custom#patch_global('autoCompleteEvents',
+\ ['InsertEnter', 'TextChangedI', 'TextChangedP', 'CmdlineChanged'])
+
+inoremap <C-n> <Cmd>call pum#map#insert_relative(+1)<CR>
+inoremap <C-p> <Cmd>call pum#map#insert_relative(-1)<CR>
+inoremap <C-y> <Cmd>call pum#map#confirm()<CR>
+inoremap <C-e> <Cmd>call pum#map#cancel()<CR>
+
 call ddc#custom#patch_global('sources', [
  \ 'around',
  \ 'vim-lsp',
@@ -232,15 +268,14 @@ call ddc#custom#patch_global('sourceOptions', {
  \   'mark': 'file',
  \   'isVolatile': v:true, 
  \   'forceCompletionPattern': '\S/\S*',
+ \ },
  \ 'skkeleton': {
  \   'mark': 'skkeleton',
  \   'matchers': ['skkeleton'],
  \   'sorters': [],
  \ },
- \ }})
+ \ })
 call ddc#enable()
-imap <C-n> <Cmd>call pum#map#insert_relative(+1)<CR>
-imap <C-p> <Cmd>call pum#map#insert_relative(-1)<CR>
 
 " You must set the default ui.
 " Note: ff ui
@@ -251,7 +286,8 @@ call ddu#custom#patch_global({
     \   'ff': {
     \     'prompt': '> ',
     \   },
-    \   'filer': {
+    \   '_': {
+    \     'split': 'floating',
     \   }
     \ },
     \ })
@@ -330,7 +366,6 @@ call ddu#custom#patch_local('filer', {
 \      'columns': ['filename'],
 \    },
 \  },
-\  'columns': ['filename'],
 \  'kindOptions': {
 \    'file': {
 \      'defaultAction': 'open',
@@ -377,6 +412,8 @@ autocmd FileType ddu-filer call s:ddu_my_filer_settings()
 function! s:ddu_my_filer_settings() abort
   nnoremap <buffer><silent> <CR>
         \ <Cmd>call ddu#ui#filer#do_action('itemAction')<CR>
+  nnoremap <buffer><silent> d
+  \ <Cmd>call ddu#ui#ff#do_action('chooseAction')<CR>
   nnoremap <buffer><silent> <Space>
         \ <Cmd>call ddu#ui#filer#do_action('toggleSelectItem')<CR>
   nnoremap <buffer> o
