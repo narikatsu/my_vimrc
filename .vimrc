@@ -117,6 +117,7 @@ call plug#begin('~/.vim/plugged')
 
 "Emmet
 Plug 'mattn/emmet-vim'
+let g:user_emmet_leader_key='<c-t>'
 
 Plug 'tpope/vim-surround'
 Plug 'Townk/vim-autoclose'
@@ -159,6 +160,14 @@ function! s:skkeleton_init() abort
     \ "z(": ["【", ''],
     \ "z)": ["】", ''],
     \ "z*": ["※", ''],
+    \ ":": [":", ''],
+    \ "z:": ["：", ''],
+    \ "?": ["?", ''],
+    \ "z?": ["？", ''],
+    \ "!": ["!", ''],
+    \ "z!": ["！", ''],
+    \ "-": ["-", ''],
+    \ "z-": ["ー", ''],
     \ })
 endfunction
 autocmd User skkeleton-initialize-pre call s:skkeleton_init()
@@ -212,6 +221,9 @@ Plug 'Shougo/ddu-source-action'
 Plug 'Shougo/ddu-source-file_rec'
 Plug 'Shougo/ddu-source-file'
 Plug 'Shougo/ddu-source-register'
+Plug 'matsui54/ddu-source-command_history'
+Plug 'tomato3713/ddu-source-joplin'
+Plug 'tomato3713/ddu-kind-joplin'
 
 
 " Setting for Vim-LSP(Language Protocol Server)
@@ -250,7 +262,7 @@ call ddc#custom#patch_global('sources', [
  \ 'around',
  \ 'vim-lsp',
  \ 'skkeleton',
- \ 'file'
+ \ 'file',
  \ ])
 call ddc#custom#patch_global('sourceOptions', {
  \ '_': {
@@ -285,9 +297,23 @@ call ddu#custom#patch_global({
     \ 'uiParams': {
     \   'ff': {
     \     'prompt': '> ',
+    \     'startFilter': v:true,
     \   },
     \   '_': {
-    \     'split': 'floating',
+    \     'split': 'floating', 
+    \     'winRow': 5, 
+    \     'winHeight': 10, 
+    \     'winWidth': 80, 
+    \     'floatingBorder': 'single', 
+    \     'previewRow': 16, 
+    \     'previewFloating': v:true,
+    \     'previewFloatingBorder': 'single', 
+    \     'previewFloatingTitle': 'Preview', 
+    \     'previewSplit': 'vertical', 
+    \     'highlights': {
+    \       'floating': 'Normal',
+    \       'floatingBorder': 'Normal',
+    \     }
     \   }
     \ },
     \ })
@@ -299,12 +325,21 @@ call ddu#custom#patch_global({
     \     'file': {
     \       'defaultAction': 'open',
     \     },
+    \     'folder': {
+    \       'defaultAction': 'expandItem',
+    \     },
     \     'word': {
     \       'defaultAction': 'append',
     \     },
     \     'action': {
     \       'defaultAction': 'do',
     \     },
+    \     'command_history': {
+    \       'defaultAction': 'execute',
+    \     },
+    \     'joplin': {
+    \        'defaultAction': 'open',
+    \     }
     \   }
     \ })
 " Specify matcher.
@@ -321,11 +356,11 @@ call ddu#custom#patch_global({
 " Set default sources
 " Note: file source
 " https://github.com/Shougo/ddu-buffer-file
-call ddu#custom#patch_global({
-    \ 'sources': [
-    \   {'name': 'file', 'params': {}},
-    \ ],
-    \ })
+"call ddu#custom#patch_global({
+"    \ 'sources': [
+"    \   {'name': 'file', 'params': {}},
+"    \ ],
+"    \ })
 
 " Specify source with params
 " Note: file_rec source
@@ -341,10 +376,26 @@ call ddu#custom#patch_local('file_rec', {
 
 
 " source param setting for ripgrep source
+let jop_token = 'f1d41a2a4e4ce159d171f66d17e0ec9e4958b4a7eb62817e254071011ddd033f0ede462774a1ed58434d204547df6ff07023cd3fee7f8d3101cc723a03cba603'
+call ddu#custom#patch_local('joplin_tree', {
+    \  'ui': 'filer',
+    \  'sources': [{
+    \    'name': 'joplin_tree',
+    \    'params': {
+    \      'token': jop_token,
+    \    },
+    \  }],
+    \  'sourceOptions': {
+    \    '_': {
+    \      'columns': ['filename'],
+    \    },
+    \  },
+    \ })
 call ddu#custom#patch_global({
     \   'sourceParams' : {
     \     'rg' : {
-    \       'args': ['--column', '--no-heading', '--color', 'never'],
+    \       'args': ['--json'],
+    \       'volatile': v:true,
     \     },
     \   },
     \ })
@@ -355,7 +406,8 @@ nnoremap <silent> <Leader>ur :call ddu#start({'sources': [{'name': 'register'}]}
 nnoremap <silent> <Leader>ue :call ddu#start({'name': 'filer'})<CR>
 nnoremap <silent> <Leader>uf :call ddu#start({'name': 'file_rec'})<CR>
 nnoremap <silent> <Leader>ug :call ddu_rg#find()<CR>
-
+nnoremap <silent> <Leader>uc :call ddu#start({'sources': [{'name': 'command_history'}]})<CR>
+nnoremap <silent> <Leader>uj :call ddu#start({'name': 'joplin_tree'})<CR>
 call ddu#custom#patch_local('filer', {
 \  'ui': 'filer',
 \  'sources': [
@@ -411,16 +463,17 @@ endfunction
 autocmd FileType ddu-filer call s:ddu_my_filer_settings()
 function! s:ddu_my_filer_settings() abort
   nnoremap <buffer><silent> <CR>
-        \ <Cmd>call ddu#ui#filer#do_action('itemAction')<CR>
+        \ <Cmd>call ddu#ui#do_action('itemAction')<CR>
   nnoremap <buffer><silent> d
-  \ <Cmd>call ddu#ui#ff#do_action('chooseAction')<CR>
+        \ <Cmd>call ddu#ui#do_action('chooseAction')<CR>
   nnoremap <buffer><silent> <Space>
-        \ <Cmd>call ddu#ui#filer#do_action('toggleSelectItem')<CR>
-  nnoremap <buffer> o
-        \ <Cmd>call ddu#ui#filer#do_action('expandItem',
-        \ {'mode': 'toggle'})<CR>
+        \ <Cmd>call ddu#ui#do_action('toggleSelectItem')<CR>
+  nnoremap <buffer><silent> o
+        \ <Cmd>call ddu#ui#do_action('expandItem', {'mode': 'toggle'})<CR>
+  nnoremap <buffer><silent> p
+        \ <Cmd>call ddu#ui#do_action('preview')<CR>
   nnoremap <buffer><silent> q
-        \ <Cmd>call ddu#ui#filer#do_action('quit')<CR>
+        \ <Cmd>call ddu#ui#do_action('quit')<CR>
 endfunction
 
 colorscheme jellybeans
