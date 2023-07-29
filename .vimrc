@@ -3,7 +3,7 @@ set encoding=utf-8
 set fileencodings=utf-8,iso-2022-jp,euc-jp,sjis,cp932
 set guifont=Ricty_Diminished_Discord:h14
 set ambiwidth=double
-language C 
+language C
 "-----------------------------------------------------"
 
 "-----------COMMAND SPACE CONFIG----------------------"
@@ -166,8 +166,6 @@ function! s:skkeleton_init() abort
     \ "z?": ["？", ''],
     \ "!": ["!", ''],
     \ "z!": ["！", ''],
-    \ "-": ["-", ''],
-    \ "z-": ["ー", ''],
     \ })
 endfunction
 autocmd User skkeleton-initialize-pre call s:skkeleton_init()
@@ -195,20 +193,19 @@ Plug 'lambdalisue/fern.vim'
 " requires denops.vim, pum.vim
 Plug 'Shougo/ddc.vim'
 Plug 'Shougo/pum.vim'
-Plug 'Shougo/ddc-around'
-Plug 'LumaKernel/ddc-file'
+Plug 'Shougo/ddc-ui-pum'
+Plug 'LumaKernel/ddc-source-file'
 Plug 'Shougo/ddc-matcher_head'
 Plug 'Shougo/ddc-sorter_rank'
 Plug 'Shougo/ddc-converter_remove_overlap'
-Plug 'Shun/ddc-vim-lsp'
-Plug 'Shougo/ddc-ui-native'
-Plug 'Shougo/ddc-ui-pum'
+Plug 'Shun/ddc-source-vim-lsp'
+Plug 'Shougo/ddc-source-around'
+Plug 'Shougo/ddc-source-cmdline'
+Plug 'Shougo/ddc-source-cmdline-history'
 
 " Setting for UI framework
-Plug 'Shougo/vimfiler'
-Plug 'Shougo/unite.vim'
-Plug 'Shougo/ddu.vim' "Instead of Unite
-"component of ddu
+Plug 'Shougo/ddu.vim'
+"components of ddu
 Plug 'Shougo/ddu-ui-ff'
 Plug 'Shougo/ddu-ui-filer'
 Plug 'Shougo/ddu-column-filename'
@@ -235,34 +232,68 @@ Plug 'hrsh7th/vim-vsnip-integ'
 
 Plug 'PProvost/vim-ps1'
 
+Plug 'othree/html5.vim'
+Plug 'pangloss/vim-javascript'
+Plug 'evanleck/vim-svelte', {'branch': 'main'}
 
 call plug#end()
 
 " Settings for LSP
 let g:lsp_diagnostics_enabled = 1
 let g:lsp_diagnostics_echo_cursor = 1
-let g:asyncomplete_auto_popup = 1
-let g:asyncomplete_auto_completeopt = 0
-let g:asyncomplete_popup_delay = 200
-let g:lsp_text_edit_enabled = 1
+let g:lsp_log_file = expand('~/vim-lsp.log')
+let g:lsp_signature_help_enable = 0
+" let g:lsp_completion_documentation_enabled = 0
+let g:lsp_log_verbose = 1
 
 " Setting for ddc.vim (auto complete)
 " https://github.com/Shougo/ddc-ui-native
-" call ddc#custom#patch_global('completionMenu', 'pum.vim')
-call ddc#custom#patch_global('ui', 'pum')
-call ddc#custom#patch_global('autoCompleteEvents',
-\ ['InsertEnter', 'TextChangedI', 'TextChangedP', 'CmdlineChanged'])
+call ddc#custom#patch_global({
+  \  'ui': 'pum', 
+  \  'autoCompleteEvents': [
+  \    'TextChangedI', 'TextChangedP', 'CmdlineChanged'
+  \  ],
+  \  'cmdlineSources': {
+  \    ':': ['cmdline-history', 'cmdline']
+  \  }
+  \  })
+  "\    'InsertEnter', 'TextChangedI', 'TextChangedP', 'CmdlineChanged'
 
+" Keymaps for insert-mode completion
 inoremap <C-n> <Cmd>call pum#map#insert_relative(+1)<CR>
 inoremap <C-p> <Cmd>call pum#map#insert_relative(-1)<CR>
 inoremap <C-y> <Cmd>call pum#map#confirm()<CR>
 inoremap <C-e> <Cmd>call pum#map#cancel()<CR>
 
+" Keymaps for normal-mode completion
+nnoremap : <Cmd>call CommandlineConfigure()<CR>:
+
+function CommandlineConfigure() abort
+  cnoremap <C-n> <Cmd>call pum#map#insert_relative(+1)<CR>
+  cnoremap <C-p> <Cmd>call pum#map#insert_relative(-1)<CR>
+  cnoremap <C-y> <Cmd>call pum#map#confirm()<CR>
+  cnoremap <C-e> <Cmd>call pum#map#cancel()<CR>
+  autocmd User DDCCmdlineLeave ++once call CommandlinePost()
+  call ddc#enable_cmdline_completion()
+endfunction
+
+function! CommandlinePost() abort
+  silent! cunmap <C-n>
+  silent! cunmap <C-p>
+  silent! cunmap <C-y>
+  silent! cunmap <C-e>
+endfunction
+
+call pum#set_option({
+  \    'border': 'rounded',
+  \    'padding': v:false,
+  \  })
+
 call ddc#custom#patch_global('sources', [
- \ 'around',
  \ 'vim-lsp',
  \ 'skkeleton',
  \ 'file',
+ \ 'around',
  \ ])
 call ddc#custom#patch_global('sourceOptions', {
  \ '_': {
@@ -270,23 +301,30 @@ call ddc#custom#patch_global('sourceOptions', {
  \   'sorters': ['sorter_rank'],
  \   'converters': ['converter_remove_overlap'],
  \ },
- \ 'around': {'mark': 'around'},
+ \ 'around': {'mark': 'A'},
  \ 'vim-lsp': {
- \   'mark': 'lsp', 
+ \   'mark': 'LSP', 
  \   'matchers': ['matcher_head'],
  \   'forceCompletionPattern': '\.|:|->|"\w+/*',
  \ },
  \ 'file': {
- \   'mark': 'file',
+ \   'mark': 'FILE',
  \   'isVolatile': v:true, 
  \   'forceCompletionPattern': '\S/\S*',
  \ },
  \ 'skkeleton': {
- \   'mark': 'skkeleton',
+ \   'mark': 'SKK',
  \   'matchers': ['skkeleton'],
  \   'sorters': [],
  \ },
+ \ 'cmdline': {
+ \   'mark': 'CMD',
+ \ },
+ \ 'cmdline-history': {
+ \   'mark': 'CMD-H',
+ \ },
  \ })
+
 call ddc#enable()
 
 " You must set the default ui.
@@ -304,15 +342,16 @@ call ddu#custom#patch_global({
     \     'winRow': 5, 
     \     'winHeight': 10, 
     \     'winWidth': 80, 
-    \     'floatingBorder': 'single', 
+    \     'floatingBorder': 'rounded', 
     \     'previewRow': 16, 
+    \     'previewWidth': 80, 
     \     'previewFloating': v:true,
-    \     'previewFloatingBorder': 'single', 
+    \     'previewFloatingBorder': 'rounded', 
     \     'previewFloatingTitle': 'Preview', 
     \     'previewSplit': 'vertical', 
     \     'highlights': {
-    \       'floating': 'Normal',
-    \       'floatingBorder': 'Normal',
+    \       'floating': 'String',
+    \       'floatingBorder': 'String',
     \     }
     \   }
     \ },
