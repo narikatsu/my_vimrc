@@ -1,7 +1,6 @@
 "-----------ENCORDING & CHARACTER CONFIG--------------"
 set encoding=utf-8
 set fileencodings=utf-8,iso-2022-jp,euc-jp,sjis,cp932
-set guifont=Ricty_Diminished_Discord:h14
 set ambiwidth=double
 language C
 "-----------------------------------------------------"
@@ -15,6 +14,8 @@ set cmdheight=2
 set wildmode=list:longest
 set ruler "View rownum,columnnum at rightbottom
 "-----------------------------------------------------"
+
+" autocmd BufLeave <buffer> echo localtime()
 
 "-----------BASIS CONFIG------------------------------"
 set nocompatible "SetOff VI MODE
@@ -141,8 +142,9 @@ cmap <C-j> <Plug>(skkeleton-toggle)
 
 function! s:skkeleton_init() abort
   call skkeleton#config({
-    \ 'userJisyo':"~/.skkeleton/user-jisyo",
-    \ 'globalJisyo':"~/.skkeleton/SKK-JISYO.L",
+    \ 'globalDictionaries': ["~/.skkeleton/SKK-JISYO.L"],
+    \ 'userDictionary':"~/.skkeleton/user-jisyo",
+    \ 'showCandidatesCount':0,
     \ })
   "カナテーブル
   "記号
@@ -152,7 +154,6 @@ function! s:skkeleton_init() abort
     \ "zj": ["↓", ''],
     \ "zk": ["↑", ''],
     \ "zl": ["→", ''],
-    \ "z.": ["…", ''],
     \ "z~": ["〜", ''],
     \ "z/": ["・", ''],
     \ "z[": ["『", ''],
@@ -166,6 +167,11 @@ function! s:skkeleton_init() abort
     \ "z?": ["？", ''],
     \ "!": ["!", ''],
     \ "z!": ["！", ''],
+    \ ",": [",", ''],
+    \ "z,": ["、", ''],
+    \ ".": [".", ''],
+    \ "z.": ["。", ''],
+    \ "z-": ["-", ''],
     \ })
 endfunction
 autocmd User skkeleton-initialize-pre call s:skkeleton_init()
@@ -334,7 +340,7 @@ call ddu#custom#patch_global({
     \ 'ui': 'ff',
     \ 'uiParams': {
     \   'ff': {
-    \     'prompt': '> ',
+    \     'prompt': 'filter> ',
     \     'startFilter': v:true,
     \   },
     \   '_': {
@@ -469,22 +475,22 @@ call ddu#custom#patch_local('filer', {
 \  },
 \ })
 
-autocmd FileType ddu-ff call s:ddu_my_settings()
-function! s:ddu_my_settings() abort
+autocmd FileType ddu-ff call s:ddu_ff_my_settings()
+function! s:ddu_ff_my_settings() abort
   nnoremap <buffer><silent> <CR>
-  \ <Cmd>call ddu#ui#ff#do_action('itemAction')<CR>
+  \ <Cmd>call ddu#ui#do_action('itemAction')<CR>
   nnoremap <buffer><silent> <Space>
-  \ <Cmd>call ddu#ui#ff#do_action('toggleSelectItem')<CR>
+  \ <Cmd>call ddu#ui#do_action('toggleSelectItem')<CR>
   nnoremap <buffer><silent> d
-  \ <Cmd>call ddu#ui#ff#do_action('chooseAction')<CR>
+  \ <Cmd>call ddu#ui#do_action('chooseAction')<CR>
   nnoremap <buffer><silent> i
-  \ <Cmd>call ddu#ui#ff#do_action('openFilterWindow')<CR>
+  \ <Cmd>call ddu#ui#do_action('openFilterWindow')<CR>
   nnoremap <buffer><silent> p
-  \ <Cmd>call ddu#ui#ff#do_action('preview')<CR>
+  \ <Cmd>call ddu#ui#do_action('preview')<CR>
   nnoremap <buffer><silent> r
-  \ <Cmd>call ddu#ui#ff#do_action('refreshItems')<CR>
+  \ <Cmd>call ddu#ui#do_action('refreshItems')<CR>
   nnoremap <buffer><silent> q
-  \ <Cmd>call ddu#ui#ff#do_action('quit')<CR>
+  \ <Cmd>call ddu#ui#do_action('quit')<CR>
   nnoremap <buffer><silent> h
   \ <Cmd>echo('enter:open, q:quit, i:filter, d:action, p:preview r:refresh')<CR>
 endfunction
@@ -513,6 +519,8 @@ function! s:ddu_my_filer_settings() abort
         \ <Cmd>call ddu#ui#do_action('preview')<CR>
   nnoremap <buffer><silent> q
         \ <Cmd>call ddu#ui#do_action('quit')<CR>
+  nnoremap <buffer><silent> h
+        \ <Cmd>echo('enter:open, q:quit, space:select, o:expand, d:action, p:preview')<CR>
 endfunction
 
 colorscheme jellybeans
