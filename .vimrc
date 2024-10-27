@@ -5,6 +5,19 @@ set ambiwidth=double
 language C
 "-----------------------------------------------------"
 
+"-----------NEOVIDE(GUI) APPEARANCE CONFIG -----------"
+let g:neovide_transparency = 0.85
+"-----------ENCORDING & CHARACTER CONFIG--------------"
+set encoding=utf-8
+set fileencodings=utf-8,iso-2022-jp,euc-jp,sjis,cp932
+set ambiwidth=double
+language C
+"-----------------------------------------------------"
+
+"-----------NEOVIDE(GUI) APPEARANCE CONFIG -----------"
+let g:neovide_transparency = 0.85
+"-----------------------------------------------------"
+
 "-----------COMMAND SPACE CONFIG----------------------"
 set showcmd
 set cursorline
@@ -74,7 +87,7 @@ if has('win32')
   if has('nvim')
     autocmd TermOpen * startinsert
     tnoremap <silent> <ESC> <C-\><C-n>
-    nnoremap <Leader>t :terminal<CR>
+    nnoremap <Leader>t :terminal powershell<CR>
   else
     nnoremap <Leader>t :bo terminal ++close ++rows=10 powershell<CR>
   endif
@@ -142,9 +155,9 @@ cmap <C-j> <Plug>(skkeleton-toggle)
 
 function! s:skkeleton_init() abort
   call skkeleton#config({
-    \ 'globalDictionaries': ["~/.skkeleton/SKK-JISYO.L"],
+    \ 'globalDictionaries': ["~/.skkeleton/SKK-JISYO.L", "~/.skkeleton/SKK-JISYO.jinmei", "~/.skkeleton/SKK-JISYO.station"],
     \ 'userDictionary':"~/.skkeleton/user-jisyo",
-    \ 'showCandidatesCount':0,
+    \ 'showCandidatesCount':2,
     \ })
   "カナテーブル
   "記号
